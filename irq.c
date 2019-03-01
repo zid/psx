@@ -8,9 +8,7 @@ static void bios_enter_crit(void)
 	asm (
 		"addiu $a0, $0, 1;"
 		"syscall"
-		:
-		:
-		: "$a0"
+		::: "$a0"
 	);
 }
 
@@ -49,5 +47,10 @@ void irq_install(void (*f)(void))
 	bios_enter_crit();
 	bios_sys_enq_intrp(&cb);
 	bios_leave_crit();
+}
+
+void irq_enable_vblank(void)
+{
+	*(unsigned int *)(0x1F801074) |= 1;
 }
 

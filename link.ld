@@ -3,17 +3,20 @@ OUTPUT_FORMAT("elf32-littlemips")
 SECTIONS
 {
 	. = 0x8000F800;
+
 	.text : { 
 		header.o (.text);
 		. = ALIGN(0x800);
-		*.o (.text*);
+		* (.text*);
 		. = ALIGN(0x800);
-	}
-	.data : {
+		* (.data);
+		* (.rodata);
 		. = ALIGN(0x800);
-		*.o (.data*);
-		*.o (.rodata*);
+		/* TODO: Clear this from startup code instead of including it in the binary */
+		* (.bss);
 	}
+
+	/DISCARD/ : { * (*); } 
 	image_size = SIZEOF(.text) - 0x800;
 }
 
