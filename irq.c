@@ -51,6 +51,6 @@ void irq_install(void (*f)(void))
 
 void irq_enable_vblank(void)
 {
-	*(unsigned int *)(0x1F801074) |= 1;
+	*(volatile unsigned int *)(0x1F801074) |= 1;
 }
 
