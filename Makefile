@@ -1,3 +1,6 @@
+AS = mipsel-unknown-elf-as
+OBJCOPY = mipsel-unknown-elf-objcopy
+CC = mipsel-unknown-elf-gcc
 CFLAGS = -nostdlib -nostartfiles -ffreestanding -fno-builtin -O3 -Iinclude/ -march=3000 -mtune=3000 -msoft-float 
 ASMSRC = $(wildcard *.asm)
 ASMOBJ = $(ASMSRC:.asm=.o)
@@ -9,18 +12,18 @@ clean:
 	rm *.exe *.bin *.o
 
 out.exe: $(COBJ) $(ASMOBJ)
-	mipsel-unknown-elf-gcc $(COBJ) $(ASMOBJ) $(CFLAGS) -fwhole-program -Wl,-Tlink.ld -o out.bin
-	mipsel-unknown-elf-objcopy -j.text -Obinary out.bin out.exe
+	$(CC) $(COBJ) $(ASMOBJ) $(CFLAGS) -Wl,-Tlink.ld -o out.bin
+	$(OBJCOPY) -j.text -Obinary out.bin out.exe
 
 %.o : %.c
-	mipsel-unknown-elf-gcc $^ -o $@ -c $(CFLAGS) -flto
+	$(CC) $^ -o $@ -c $(CFLAGS)
 
 %.o : %.asm
-	mipsel-unknown-elf-as $^ -o $@ -msoft-float
+	$(AS) $^ -o $@ -msoft-float
 
 mkiso: out.exe
 	cp out.exe fs/
-	mkpsxiso psx.xml
+	./mkpsxiso psx.xml
 
 cdemuiso: out.exe
 	cp out.exe fs/

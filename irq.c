@@ -28,10 +28,12 @@ static void bios_sys_enq_intrp(struct irq_cb *cb)
 		"addiu $t2, $0, 0xC0;"
 		"addiu $a0, $0, 0;"
 		"move $a1, %0;"
+		"addiu $sp, $sp, -8;"
 		"jalr $t2;"
+		"addiu $sp, $sp, 8;"
 		:
 		: "r" (cb), "m" (*cb)
-		: "$t1", "$t2", "$a1", "$a0"
+		: "$t1", "$t2", "$a1", "$a0", "$ra"
 	);
 }
 
