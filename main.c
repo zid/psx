@@ -1,8 +1,6 @@
 #include "gpu.h"
 #include "cdrom.h"
-
-void irq_install(void (*f)(void));
-void irq_enable_vblank(void);
+#include "irq.h"
 
 static unsigned int l2[] =
 {
@@ -31,42 +29,30 @@ static unsigned int l[] =
 	0x01100150
 };
 
-void vblank_callback(void)
+static void vblank_callback()
 {
 	l[0] = 0x8<<24 | ((unsigned int)&l2 & 0xFFFFFF);
 	gpu_send_list(l);
-	//gpu_send_packet(l);
 }
 
-static const char path[] = "ZERO2.BMP;1";
-static char buf[2048];
+static int irq_callback(void)
+{
+	if(IRQ_STAT & IRQ_VBLANK)
+	{
+		vblank_callback();
+		IRQ_STAT = ~IRQ_VBLANK;
+		return 0;
+	}
+
+	return 1;
+}
 
 int main(void)
 {
-#if 1
-	irq_install(vblank_callback);
-#endif
+	irq_install(irq_callback);
 
-#if 0
-	int mode = 1;
-	int fd;
+	IRQ_MASK |= IRQ_VBLANK;
 
-	asm volatile (
-		"addiu $t1, $0, 0x32;" /* Function A4 */
-		"addiu $t2, $0, 0xB0;" /* Bios 0xA0 */
-		"move $a0, %1;"
-		"addiu $5, $0, %2;"
-		"addiu $sp, $sp, -16;"
-		"jalr $t2;"
-		"move %0, $v0;"
-		"addiu $sp, $sp, 16;"
-		: "=r" (fd)
-		: "r" (path), "i" (mode)
-		: "$1", "$2", "$3", "$4", "$5", "$7", "$7", "$7", "$8",
-		  "$9", "$10", "$11", "$12", "$13", "$14", "$15"
-	);
-#endif
-#if 1 
 	gpu_reset();
 	gpu_display_offset(0, 0);
 	gpu_horiz_range(608, 608 + (320*8));
@@ -77,7 +63,6 @@ int main(void)
 	gpu_draw_offset(0, 0);
 	gpu_display_enable(0);
 
-	
 	CD_WAIT();
 	CD_SELECT(0);
 	CD_CMD(CMD_INIT);
@@ -102,7 +87,6 @@ int main(void)
 	CD_PARAM(MODE_CCDA);
 	CD_CMD(CMD_SETMODE);
 
-
 	/* Play track 2 */
 	CD_WAIT();
 	CD_SELECT(0);
@@ -110,7 +94,7 @@ int main(void)
 	CD_CMD(CMD_PLAY);
 
 	irq_enable_vblank();
-#endif
+	
 	while(1)
 		;
 }

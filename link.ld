@@ -14,6 +14,7 @@ SECTIONS
 		. = ALIGN(0x800);
 		/* TODO: Clear this from startup code instead of including it in the binary */
 		* (.bss);
+		. = ALIGN(0x800);
 	}
 
 	/DISCARD/ : { * (*); } 
