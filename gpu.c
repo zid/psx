@@ -1,3 +1,5 @@
+#include "cdrom.h"
+
 #define GP0    *((volatile unsigned int *)(0x1F801810))
 #define GP1    *((volatile unsigned int *)(0x1F801814))
 #define DPCR   *((volatile unsigned int *)(0x1F8010F0))
@@ -6,13 +8,33 @@
 #define D2BCR  *((volatile unsigned int *)(0x1F8010A4))
 #define D2CHCR *((volatile unsigned int *)(0x1F8010A8))
 
+#define GPUSTAT *((volatile unsigned int *)(0x1F801814))
+#define GPU_CMD_READY (1<<26)
+
 #define DMA_START    0x01000000
+#define DMA_SYNC     0x00000200
 #define DMA_LIST     0x00000400
 #define DMA_FROM_RAM 0x00000001
 
 static void gpu_dma_direction(unsigned int n)
 {
 	GP1 = 0x4<<24 | (n & 1);
+}
+
+void gpu_copy_rect_from_cd(unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+{
+	while((GPUSTAT & GPU_CMD_READY) == 0)
+		;
+	GP0 = 0xA0000000UL;
+	GP0 = y<<16 | x;
+	GP0 = h<<17 | w;
+
+	while((GP1 & (1<<28)) == 0)
+		;
+	gpu_dma_direction(2);
+	D2MADR = (unsigned int)cd_buffer;
+	D2BCR = (w*h)<<16 | 1;
+	D2CHCR = DMA_START | DMA_SYNC | DMA_FROM_RAM;
 }
 
 void gpu_send_packet(unsigned int *l)

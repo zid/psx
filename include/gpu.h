@@ -1,5 +1,6 @@
 #ifndef GPU_H
 #define GPU_H
+void gpu_copy_rect_from_cd(unsigned int x, unsigned int y, unsigned int w, unsigned int h);
 void gpu_send_packet(unsigned int *l);
 void gpu_send_list(void *p);
 void gpu_display_enable(unsigned int n);

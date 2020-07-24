@@ -3,7 +3,6 @@ OUTPUT_FORMAT("elf32-littlemips")
 SECTIONS
 {
 	. = 0x8000F800;
-
 	.text : { 
 		header.o (.text);
 		. = ALIGN(0x800);
@@ -17,7 +16,8 @@ SECTIONS
 		. = ALIGN(0x800);
 	}
 
-	/DISCARD/ : { * (*); } 
 	image_size = SIZEOF(.text) - 0x800;
+
+	/DISCARD/ : { * (.MIPS.abiflags); }
 }
 
