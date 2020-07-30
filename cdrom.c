@@ -64,9 +64,8 @@ void cdrom_init(void)
 	CD_SELECT(1);
 	*CD_IF = 0x1F;
 
-	/* No spu.h yet */
 	/* Enable CD Audio */
-	*(volatile unsigned short *)(0x1F801DAA) = 1 | 0x4000;
+	*(volatile unsigned short *)(0x1F801DAA) = 1 | 0xC000;
 	/* CD audio volume */
 	*(volatile unsigned   int *)(0x1F801DB0) = 0x40004000;
 	/* Main volume */
@@ -78,11 +77,6 @@ void cdrom_init(void)
 	CD_SELECT(2);
 	CD_VOL(128, 0, 128, 0);
 	CD_APPLY_VOLUME();
-
-	/* Enable CD-Audio */
-	CD_SELECT(0);
-	CD_PARAM(MODE_CCDA);
-	CD_CMD(CMD_SETMODE);
 }
 
 void cdrom_read_sect(unsigned int min, unsigned int sec, unsigned int sect)
@@ -90,7 +84,7 @@ void cdrom_read_sect(unsigned int min, unsigned int sec, unsigned int sect)
 	CD_SELECT(0);
 	
 	CD_WAIT();
-	CD_PARAM(min);;
+	CD_PARAM(min);
 	CD_PARAM(sec);
 	CD_PARAM(sect);
 	CD_CMD(2); /* Setloc */

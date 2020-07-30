@@ -58,4 +58,4 @@ enum CMD {
 
 void cdrom_callback(void);
 void cdrom_read_sect(unsigned int, unsigned int, unsigned int);
-extern char cd_buffer[];
+void cdrom_init(void);

@@ -4,6 +4,7 @@
 #define GP1    *((volatile unsigned int *)(0x1F801814))
 #define DPCR   *((volatile unsigned int *)(0x1F8010F0))
 #define DICR   *((volatile unsigned int *)(0x1F8010F4))
+
 #define D2MADR *((volatile unsigned int *)(0x1F8010A0))
 #define D2BCR  *((volatile unsigned int *)(0x1F8010A4))
 #define D2CHCR *((volatile unsigned int *)(0x1F8010A8))
@@ -16,22 +17,32 @@
 #define DMA_LIST     0x00000400
 #define DMA_FROM_RAM 0x00000001
 
+extern char cd_buffer[];
+
 static void gpu_dma_direction(unsigned int n)
 {
-	GP1 = 0x4<<24 | (n & 1);
+	GP1 = (0x4<<24) | (n & 3);
+}
+
+void gpu_reset_fifo(void)
+{
+	GP1 = 0x01000000;
 }
 
 void gpu_copy_rect_from_cd(unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
+	gpu_reset_fifo();
+	gpu_dma_direction(2);
 	while((GPUSTAT & GPU_CMD_READY) == 0)
 		;
+
 	GP0 = 0xA0000000UL;
 	GP0 = y<<16 | x;
 	GP0 = h<<17 | w;
 
 	while((GP1 & (1<<28)) == 0)
 		;
-	gpu_dma_direction(2);
+
 	D2MADR = (unsigned int)cd_buffer;
 	D2BCR = (w*h)<<16 | 1;
 	D2CHCR = DMA_START | DMA_SYNC | DMA_FROM_RAM;
@@ -48,18 +59,18 @@ void gpu_send_packet(unsigned int *l)
 
 void gpu_send_list(void *p)
 {
+	/* DMA cpu to gpu */
+	gpu_dma_direction(2);
+
 	/* Wait for 'DMA Ready' bit */
 	while((GP1 & (1<<28)) == 0)
 		;
-	
+
 	/* Enable DMA Channel 2 */
 	DPCR |= 0x800;
 
 	/* Disable DMA IRQs */
 	DICR = 0;
-
-	/* DMA cpu to gpu */
-	gpu_dma_direction(2);
 
 	D2MADR = (unsigned int)p;
 	D2BCR  = 0;

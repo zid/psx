@@ -9,11 +9,15 @@ regsave:
 .set noat
 
 irq_install:
+	/* Disable IRQs */
+	addiu $v1, $ra, 0
+	jal disable_irqs
+	addiu $ra, $v1, 0
+
 	lui  $v0, 0x8001
 	addiu $k0, $v0, except_vect
 	lui $v0, 0x8000
 	addiu $v0, $v0, 0x80
-
 /* Ghetto copy except_vect to 0x80000080 */
 	lw $v1, 0($k0)
 	sw $v1, 0($v0)
@@ -22,6 +26,13 @@ irq_install:
 	sw $v1, 4($v0)
 	lw $v1, 8($k0)
 	sw $v1, 8($v0)
+
+/* Make bios flush the i-cache */
+	addiu $v1, $ra, 0
+	addiu $v0, $0, 0xA0
+	addiu $t1, $0, 0x44
+	jal $v0
+	addiu $ra, $v1, 0
 
 /* Set IRQ flag on COP0 */
 	addiu $v0, $0, 1029 
@@ -102,6 +113,12 @@ save_regs_and_callback:
 	mfc0 $k0, $14
 	rfe
 	j $k0
+
+disable_irqs:
+	addiu $v0, $0, 0
+	mtc0 $v0, $12
+	rfe
+	jr $ra
 
 except_vect:
 	la $k0, save_regs_and_callback
