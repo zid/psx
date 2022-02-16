@@ -1,4 +1,5 @@
 #include "cdrom.h"
+#include "print.h"
 
 unsigned char cd_buffer[0x800];
 
@@ -7,13 +8,13 @@ static volatile int cdrom_status = 0;
 void cdrom_callback()
 {
 	int prev_index, i;
-
+	printf("IRQ: cdrom\n");
 	prev_index = *CD_STATUS & 3;
 
 	CD_SELECT(1);
 	cdrom_status = *CD_IF & 7;
 
-	/* Just discard response FIFO for nw */
+	/* Just discard response FIFO for now */
 	CD_EAT_FIFO();
 
 	/* Most things */
@@ -32,7 +33,7 @@ void cdrom_callback()
 	/* Ack the status */
 	CD_SELECT(1);
 	*CD_IF = 7;
-	
+
 	CD_SELECT(0);
 
 	/* Tell the CD-ROM we're ready to recieve data */
@@ -56,14 +57,17 @@ out:
 
 void cdrom_init(void)
 {
+	printf("\tcdrom: CMD_INIT\n");
 	CD_WAIT();
 	CD_SELECT(0);
 	CD_CMD(CMD_INIT);
 
+	printf("\tcdrom: Resetting IF\n");
 	CD_WAIT();
 	CD_SELECT(1);
 	*CD_IF = 0x1F;
 
+	printf("\tcdrom: Enabling CD Audio, setting SPU volume\n");
 	/* Enable CD Audio */
 	*(volatile unsigned short *)(0x1F801DAA) = 1 | 0xC000;
 	/* CD audio volume */
@@ -72,6 +76,7 @@ void cdrom_init(void)
 	*(volatile unsigned short *)(0x1F801D80) = 0x3FFE;
 	*(volatile unsigned short *)(0x1F801D82) = 0x3FFF;
 
+	printf("\tcdrom: Setting stereo output, volume\n");
 	/* Set CD-ROM to stereo, max volume */
 	CD_WAIT();
 	CD_SELECT(2);
@@ -82,7 +87,7 @@ void cdrom_init(void)
 void cdrom_read_sect(unsigned int min, unsigned int sec, unsigned int sect)
 {
 	CD_SELECT(0);
-	
+
 	CD_WAIT();
 	CD_PARAM(min);
 	CD_PARAM(sec);
@@ -90,7 +95,7 @@ void cdrom_read_sect(unsigned int min, unsigned int sec, unsigned int sect)
 	CD_CMD(2); /* Setloc */
 
 	CD_WAIT();
-	CD_CMD(0x15); /* Seek */	
+	CD_CMD(0x15); /* Seek */
 
 	CD_WAIT();
 	CD_CMD(0x6); /* ReadN */
