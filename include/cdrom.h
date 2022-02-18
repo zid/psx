@@ -1,15 +1,17 @@
 /* Registers */
-#define CD_STATUS  ((volatile unsigned char *)(0x1F801800))
-#define CD_COMMAND ((volatile unsigned char *)(0x1F801801))
-#define CD_VOL_LL  ((volatile unsigned char *)(0x1F801802))
-#define CD_VOL_LR  ((volatile unsigned char *)(0x1F801803))
-#define CD_VOL_RR  ((volatile unsigned char *)(0x1F801801))
-#define CD_VOL_RL  ((volatile unsigned char *)(0x1F801802))
-#define CD_VOL_SET ((volatile unsigned char *)(0x1F801803))
-#define CD_PARAMS  ((volatile unsigned char *)(0x1F801802))
-#define CD_IF      ((volatile unsigned char *)(0x1F801803))
-#define CD_FIFO    ((volatile unsigned char *)(0x1F801801))
-#define CD_REQ     ((volatile unsigned char *)(0x1F801803))
+#define CD_STATUS  ((volatile unsigned char *)(0xBF801800))
+#define CD_COMMAND ((volatile unsigned char *)(0xBF801801))
+#define CD_VOL_LL  ((volatile unsigned char *)(0xBF801802))
+#define CD_VOL_LR  ((volatile unsigned char *)(0xBF801803))
+#define CD_VOL_RR  ((volatile unsigned char *)(0xBF801801))
+#define CD_VOL_RL  ((volatile unsigned char *)(0xBF801802))
+#define CD_VOL_SET ((volatile unsigned char *)(0xBF801803))
+#define CD_PARAMS  ((volatile unsigned char *)(0xBF801802))
+#define CD_IE      ((volatile unsigned char *)(0xBF801802))
+#define CD_RFIFO   ((volatile unsigned char *)(0xBF801801))
+#define CD_IF      ((volatile unsigned char *)(0xBF801803))
+#define CD_FIFO    ((volatile unsigned char *)(0xBF801802))
+#define CD_REQ     ((volatile unsigned char *)(0xBF801803))
 
 enum CMD {
 	CMD_SETLOC = 0x2,
@@ -59,3 +61,4 @@ enum CMD {
 void cdrom_callback(void);
 void cdrom_read_sect(unsigned int, unsigned int, unsigned int);
 void cdrom_init(void);
+void cdrom_dma(void);

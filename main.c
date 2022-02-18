@@ -49,7 +49,6 @@ static void (*vblank_callback)(void) = early_callback;
 
 void irq_callback(void)
 {
-	printf("IRQ: %x\n", IRQ_STAT);
 	if(IRQ_STAT & IRQ_VBLANK)
 	{
 		vblank_callback();
@@ -61,30 +60,40 @@ void irq_callback(void)
 		cdrom_callback();
 		IRQ_STAT = ~IRQ_CDROM;
 	}
+
+	if(IRQ_STAT & IRQ_DMA)
+	{
+		cdrom_dma();
+		IRQ_STAT = ~ IRQ_DMA;
+	}
 }
 
 static void voice_setvol(int n, int vol)
 {
-	*(volatile unsigned short *)(0x1F801C00+(n*0x10)) = vol;
-	*(volatile unsigned short *)(0x1F801C02+(n*0x10)) = vol;
+	*(volatile unsigned short *)(0xBF801C00+(n*0x10)) = vol;
+	*(volatile unsigned short *)(0xBF801C02+(n*0x10)) = vol;
 }
 
 int main(void)
 {
 	int i;
+
 	printf("Muting voices\n");
 	for(i = 0; i < 24; i++)
 		voice_setvol(i, 0);
+
 	printf("Installing IRQ\n");
 	irq_install();
 
 	printf("Unmasking CD and VBLANK IRQs\n");
-	IRQ_MASK = IRQ_CDROM | IRQ_VBLANK;
+	IRQ_STAT = 0;
+	IRQ_MASK = IRQ_CDROM | IRQ_VBLANK | IRQ_DMA;
+
 	printf("CD-ROM Init\n");
 	cdrom_init();
 
-	*((volatile unsigned int *)(0x1F80101C)) = 0x80777;
-	*((volatile unsigned int *)(0x1F801114)) = 3;
+	*((volatile unsigned int *)(0xBF80101C)) = 0x80777;
+	*((volatile unsigned int *)(0xBF801114)) = 3;
 	printf("GPU Reset\n");
 	gpu_reset();
 	gpu_display_offset(0, 0);

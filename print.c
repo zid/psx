@@ -3,9 +3,16 @@
 
 #define BUF_SIZ 64
 
+#define SIO_TX *((volatile unsigned int *)(0xBF801050))
+#define SIO_STAT *((volatile unsigned int *)(0xBF801054))
+
+
 static void putchar(unsigned int c)
 {
-	*((volatile unsigned char *)(0x1f802080)) = c;
+//	*((volatile unsigned char *)(0xbf802080)) = c;
+	while(!(SIO_STAT & 1))
+		;
+	SIO_TX = c;
 }
 
 static void putstr(const char *s)

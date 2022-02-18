@@ -1,15 +1,15 @@
 #include "cdrom.h"
 
-#define GP0    *((volatile unsigned int *)(0x1F801810))
-#define GP1    *((volatile unsigned int *)(0x1F801814))
-#define DPCR   *((volatile unsigned int *)(0x1F8010F0))
-#define DICR   *((volatile unsigned int *)(0x1F8010F4))
+#define GP0    *((volatile unsigned int *)(0xBF801810))
+#define GP1    *((volatile unsigned int *)(0xBF801814))
+#define DPCR   *((volatile unsigned int *)(0xBF8010F0))
+#define DICR   *((volatile unsigned int *)(0xBF8010F4))
 
-#define D2MADR *((volatile unsigned int *)(0x1F8010A0))
-#define D2BCR  *((volatile unsigned int *)(0x1F8010A4))
-#define D2CHCR *((volatile unsigned int *)(0x1F8010A8))
+#define D2MADR *((volatile unsigned int *)(0xBF8010A0))
+#define D2BCR  *((volatile unsigned int *)(0xBF8010A4))
+#define D2CHCR *((volatile unsigned int *)(0xBF8010A8))
 
-#define GPUSTAT *((volatile unsigned int *)(0x1F801814))
+#define GPUSTAT *((volatile unsigned int *)(0xBF801814))
 #define GPU_CMD_READY (1<<26)
 
 #define DMA_START    0x01000000
@@ -89,8 +89,8 @@ void gpu_draw_offset(int x, int y)
 
 void gpu_clip_area(unsigned int x, unsigned int y, unsigned int x2, unsigned int y2)
 {
-	GP0 = 0xE3<<24 | (y  & 0x1FF)<<10 | (x  & 0x3FF);
-	GP0 = 0xE4<<24 | (y2 & 0x1FF)<<10 | (x2 & 0x3FF);
+	GP0 = 0xE3<<24 | (y  & 0xBFF)<<10 | (x  & 0x3FF);
+	GP0 = 0xE4<<24 | (y2 & 0xBFF)<<10 | (x2 & 0x3FF);
 }
 
 void gpu_draw_mode(unsigned int n)
@@ -105,7 +105,7 @@ void gpu_video_mode(unsigned int n)
 
 void gpu_vert_range(unsigned int top, unsigned int bottom)
 {
-	GP1 = 0x7<<24 | (bottom & 0x1FF)<<10 | (top & 0x1FF);
+	GP1 = 0x7<<24 | (bottom & 0xBFF)<<10 | (top & 0xBFF);
 }
 
 void gpu_horiz_range(unsigned int start, unsigned int end)
@@ -115,7 +115,7 @@ void gpu_horiz_range(unsigned int start, unsigned int end)
 
 void gpu_display_offset(unsigned int x, unsigned int y)
 {
-	GP1 = (0x5<<24) | (y & 0x1FF)<<10 | (x & 0x3FF);
+	GP1 = (0x5<<24) | (y & 0xBFF)<<10 | (x & 0x3FF);
 }
 
 void gpu_reset(void)
