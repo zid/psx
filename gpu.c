@@ -69,9 +69,6 @@ void gpu_send_list(void *p)
 	/* Enable DMA Channel 2 */
 	DPCR |= 0x800;
 
-	/* Disable DMA IRQs */
-	DICR = 0;
-
 	D2MADR = (unsigned int)p;
 	D2BCR  = 0;
 	D2CHCR = DMA_START | DMA_LIST | DMA_FROM_RAM;

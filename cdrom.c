@@ -41,6 +41,10 @@ void cdrom_callback(void)
 	*CD_REQ = 0;
 	*CD_REQ = 0x80;
 
+	/* Lifted from bios */
+	*((volatile unsigned int *)0xBF801018) = 0x20943;
+	*((volatile unsigned int *)0xBF801020) = 0x132C;
+
 	printf("\tChecking FIFO is ready...\n");
 	/* Wait for data FIFO to have something in it */
 	CD_WAIT_DATA();
@@ -49,16 +53,21 @@ void cdrom_callback(void)
 	DMA3_MADR = (unsigned int)cd_buffer;
 	DMA3_BCR  = 0x10200;
 	DMA3_CHCR = 0x11000000; /* Start */
-	printf("\tDMA sent.\n\t%02X %02X %02X %02X %02X %02X %02X %02X\n",
-		cd_buffer[0],
-		cd_buffer[1],
-		cd_buffer[2],
-		cd_buffer[3],
-		cd_buffer[4],
-		cd_buffer[5],
-		cd_buffer[6],
-		cd_buffer[7]
-	);
+	printf("\tDMA sent.\n");
+	for(int i = 0; i < 16; i++)
+	{
+		printf("%02X %02X %02X %02X %02X %02X %02X %02X\n",
+			cd_buffer[i*8+0],
+			cd_buffer[i*8+1],
+			cd_buffer[i*8+2],
+			cd_buffer[i*8+3],
+			cd_buffer[i*8+4],
+			cd_buffer[i*8+5],
+			cd_buffer[i*8+6],
+			cd_buffer[i*8+7]
+		);
+	}
+	cdrom_data_ready = 1;
 out:
 	*CD_IF = 7;
 	CD_SELECT(prev_index);
@@ -75,6 +84,11 @@ void cdrom_init(void)
 	CD_WAIT();
 	CD_SELECT(0);
 	CD_CMD(CMD_INIT);
+
+	printf("cdrom: Getstat\n");
+	CD_WAIT();
+	CD_SELECT(0);
+	CD_CMD(1);
 
 	printf("\tcdrom: Setting IE/IF\n");
 	CD_WAIT();

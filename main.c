@@ -64,7 +64,7 @@ void irq_callback(void)
 	if(IRQ_STAT & IRQ_DMA)
 	{
 		cdrom_dma();
-		IRQ_STAT = ~ IRQ_DMA;
+		IRQ_STAT = ~IRQ_DMA;
 	}
 }
 
@@ -78,12 +78,10 @@ int main(void)
 {
 	int i;
 
-	printf("Muting voices\n");
+	irq_install();
+
 	for(i = 0; i < 24; i++)
 		voice_setvol(i, 0);
-
-	printf("Installing IRQ\n");
-	irq_install();
 
 	printf("Unmasking CD and VBLANK IRQs\n");
 	IRQ_STAT = 0;
@@ -108,8 +106,8 @@ int main(void)
 	#define int2bcd(x) ((x)/10)*16 + ((x)%10)
 	for(i = 0; i < 16; i++)
 	{
-		printf("Reading CD-ROM sector: 0:02:%d\n", int2bcd(28+i));
-		cdrom_read_sect(0, 2, int2bcd(28+i));
+		printf("Reading CD-ROM sector: 0:02:16\n");
+		cdrom_read_sect(0, 2, int2bcd(16));
 		printf("Copying rect to VRAM (640, %d)\n", 256+(i*8));
 		gpu_copy_rect_from_cd(640, 256+(i*8), 128, 8);
 	}
