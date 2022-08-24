@@ -90,8 +90,6 @@ int main(void)
 	printf("CD-ROM Init\n");
 	cdrom_init();
 
-	*((volatile unsigned int *)(0xBF80101C)) = 0x80777;
-	*((volatile unsigned int *)(0xBF801114)) = 3;
 	printf("GPU Reset\n");
 	gpu_reset();
 	gpu_display_offset(0, 0);

@@ -7,6 +7,7 @@
 #define SIO_STAT *((volatile unsigned int *)(0xBF801054))
 
 
+#ifdef HARDWARE
 static void putchar(unsigned int c)
 {
 //	*((volatile unsigned char *)(0xbf802080)) = c;
@@ -127,3 +128,9 @@ void printf(const char *fmt, ...)
 	vprint(fmt, ap);
 	va_end(ap);
 }
+#else
+void printf(const char *fmt, ...)
+{
+	(void)fmt;
+}
+#endif

@@ -96,6 +96,12 @@ void cdrom_init(void)
 	*CD_IE = 0x1F;
 	*CD_IF = 7;
 
+	printf("\tcdrom: Setmode 2x, 2k, pause, CDDA\n");
+	CD_WAIT();
+	CD_SELECT(0);
+	CD_PARAM(0x83); /* Double speed, 2k sectors, autopause, cdda */
+	CD_CMD(0x0E);
+
 	printf("\tcdrom: Enabling CD Audio, setting SPU volume\n");
 	/* Enable CD Audio */
 	*(volatile unsigned short *)(0xBF801DAA) = 1 | 0xC000;

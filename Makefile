@@ -1,17 +1,21 @@
 AS = mipsel-unknown-elf-as
 OBJCOPY = mipsel-unknown-elf-objcopy
 CC = mipsel-unknown-elf-gcc
-CFLAGS = -W -Wall -nostdlib -nostartfiles -ffreestanding -fno-builtin -O3 -Iinclude/ -march=3000 -mtune=3000 -msoft-float -mno-gpopt -g 
+CFLAGS = -W -Wall -nostdlib -nostartfiles -ffreestanding -fno-builtin -O3 -Iinclude/ -march=3000 -mtune=3000 -msoft-float -mno-gpopt -g
 ASMSRC = $(wildcard *.asm)
 ASMOBJ = $(ASMSRC:.asm=.o)
 CSRC   = $(wildcard *.c)
 COBJ   = $(CSRC:.c=.o)
 
-all: out.exe
+all: psx.bin
 
-install: out.exe
+psx.bin: out.exe
 	cp out.exe fs/
-	yes | ./mkiso psx.xml && cp psx.cue psx.bin /mnt/samba
+	yes | ./mkiso psx.xml
+       
+install: psx.bin
+	cp psx.cue psx.bin /mnt/samba
+
 clean:
 	rm *.exe *.bin *.o
 
@@ -32,6 +36,7 @@ mkiso: out.exe
 	./mkiso psx.xml
 
 zero: zero.bin
-	dd if=zero.bin of=fs/zero2.bmp skip=54 bs=1
+	dd if=zero.bin of=fs/zero2.bmp skip=54 bs=1i
+
 zero.bin:
 	convert zero2.bmp -resize 128x128 -separate -swap 0,2 -combine -flip -define bmp:subtype=RGB555 zero.bin
